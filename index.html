@@ -33,12 +33,12 @@
 
     // Create 10 teams, each team in the same place
     function createTeams() {
-      let x = 100;
-      let y = 100;
+      let y = 550; // Position at the bottom
+      let teamSpacing = 80; // Spacing between teams
 
       teamColors.forEach((color, teamIndex) => {
-        let numPlayers = teamIndex + 1; // Each team has teamIndex + 1 players
-        for (let i = 0; i < numPlayers; i++) {
+        let x = 50 + teamIndex * teamSpacing; // Unique positions for each team
+        for (let i = 0; i < 10; i++) { // Each team has 10 players
           createPlayer(x, y, color, i + 1);
         }
       });
