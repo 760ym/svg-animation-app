@@ -51,8 +51,10 @@
   <svg id="scene" width="800" height="600"></svg>
   <div class="timeline" id="timeline"></div>
   <button onclick="addFrame()">Add Frame</button>
-  <button onclick="playAnimation()">Play Animation</button>
-  <button onclick="startCreateAnimation()">Start Create Animation</button>
+  <button onclick="removeLastFrame()">Remove Last Frame</button>
+  <button onclick="playAnimation()">Play</button>
+  <button onclick="stopAnimation()">Stop</button>
+  <button onclick="toggleLoop()">Loop: Off</button>
 
   <script>
     const svg = document.getElementById('scene');
@@ -62,6 +64,8 @@
     ];
     let frames = [];
     let currentFrameIndex = 0;
+    let animationInterval;
+    let isLooping = false;
 
     function createTeams() {
       let y = 550; // Position at the bottom
@@ -96,116 +100,30 @@
 
       // Add drag-and-drop functionality
       let isDragging = false;
-      let clone = null;
-      let pathLine = null;
-      let pathNodes = [];
 
       group.addEventListener('mousedown', (event) => {
         isDragging = true;
-        clone = createClonePlayer(player, text);
-        pathLine = createPathLine(player, clone);
-        pathNodes = createPathNodes(pathLine);
         event.preventDefault();
       });
 
       svg.addEventListener('mousemove', (event) => {
-        if (isDragging && clone) {
+        if (isDragging) {
           const point = svg.createSVGPoint();
           point.x = event.clientX;
           point.y = event.clientY;
           const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
-          clone.setAttribute('cx', svgPoint.x);
-          clone.setAttribute('cy', svgPoint.y);
+          player.setAttribute('cx', svgPoint.x);
+          player.setAttribute('cy', svgPoint.y);
           text.setAttribute('x', svgPoint.x);
           text.setAttribute('y', svgPoint.y);
-          updatePathLine(pathLine, player, clone, pathNodes);
         }
       });
 
       svg.addEventListener('mouseup', () => {
         if (isDragging) {
           isDragging = false;
-          clone = null;
-          pathLine = null;
-          pathNodes.forEach(node => svg.removeChild(node));
-          pathNodes = [];
         }
       });
-    }
-
-    function createClonePlayer(player, text) {
-      const clone = player.cloneNode();
-      clone.setAttribute('fill', player.getAttribute('fill'));
-      svg.appendChild(clone);
-      return clone;
-    }
-
-    function createPathLine(player, clone) {
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', player.getAttribute('cx'));
-      line.setAttribute('y1', player.getAttribute('cy'));
-      line.setAttribute('x2', clone.getAttribute('cx'));
-      line.setAttribute('y2', clone.getAttribute('cy'));
-      line.classList.add('path-line');
-      svg.appendChild(line);
-      return line;
-    }
-
-    function createPathNodes(line) {
-      const nodes = [];
-      for (let i = 0; i < 3; i++) {
-        const node = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        node.setAttribute('cx', (parseFloat(line.getAttribute('x1')) + parseFloat(line.getAttribute('x2'))) / 2);
-        node.setAttribute('cy', (parseFloat(line.getAttribute('y1')) + parseFloat(line.getAttribute('y2'))) / 2);
-        node.setAttribute('r', 5);
-        node.setAttribute('fill', 'black');
-        node.classList.add('path-node');
-        addNodeDragFunctionality(node, line);
-        svg.appendChild(node);
-        nodes.push(node);
-      }
-      return nodes;
-    }
-
-    function updatePathLine(line, player, clone, nodes) {
-      line.setAttribute('x1', player.getAttribute('cx'));
-      line.setAttribute('y1', player.getAttribute('cy'));
-      line.setAttribute('x2', clone.getAttribute('cx'));
-      line.setAttribute('y2', clone.getAttribute('cy'));
-      nodes.forEach((node, index) => {
-        node.setAttribute('cx', (parseFloat(line.getAttribute('x1')) + parseFloat(line.getAttribute('x2'))) / 2);
-        node.setAttribute('cy', (parseFloat(line.getAttribute('y1')) + parseFloat(line.getAttribute('y2'))) / 2);
-      });
-    }
-
-    function addNodeDragFunctionality(node, line) {
-      let isNodeDragging = false;
-
-      node.addEventListener('mousedown', (event) => {
-        isNodeDragging = true;
-        event.preventDefault();
-      });
-
-      svg.addEventListener('mousemove', (event) => {
-        if (isNodeDragging) {
-          const point = svg.createSVGPoint();
-          point.x = event.clientX;
-          point.y = event.clientY;
-          const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
-          node.setAttribute('cx', svgPoint.x);
-          node.setAttribute('cy', svgPoint.y);
-          updatePathLineWithNodes(line);
-        }
-      });
-
-      svg.addEventListener('mouseup', () => {
-        isNodeDragging = false;
-      });
-    }
-
-    function updatePathLineWithNodes(line) {
-      // Update the path line with the positions of the nodes
-      // This function needs to be implemented to adjust the path line based on node positions
     }
 
     function addFrame() {
@@ -221,6 +139,13 @@
       };
       frames.push(frame);
       renderTimeline();
+    }
+
+    function removeLastFrame() {
+      if (frames.length > 1) {
+        frames.pop();
+        renderTimeline();
+      }
     }
 
     function renderTimeline() {
@@ -251,22 +176,32 @@
 
     function playAnimation() {
       let frameIndex = 0;
-      const interval = setInterval(() => {
+      animationInterval = setInterval(() => {
         if (frameIndex >= frames.length) {
-          clearInterval(interval);
-          return;
+          if (isLooping) {
+            frameIndex = 0;
+          } else {
+            clearInterval(animationInterval);
+            return;
+          }
         }
         loadFrame(frameIndex);
         frameIndex++;
       }, 1000); // Change frame every 1000ms
     }
 
-    function startCreateAnimation() {
-      createTeams();
-      addFrame(); // Add initial frame
+    function stopAnimation() {
+      clearInterval(animationInterval);
     }
 
-    startCreateAnimation(); // Start automatically
+    function toggleLoop() {
+      isLooping = !isLooping;
+      const loopButton = document.querySelector('button[onclick="toggleLoop()"]');
+      loopButton.textContent = `Loop: ${isLooping ? 'On' : 'Off'}`;
+    }
+
+    createTeams();
+    addFrame(); // Add initial frame
   </script>
 </body>
 </html>
