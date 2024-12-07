@@ -19,19 +19,42 @@
       alignment-baseline: middle;
       pointer-events: none;
     }
+    .timeline {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .frame {
+      width: 20px;
+      height: 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      background-color: lightgray;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .frame.active {
+      background-color: gray;
+    }
   </style>
 </head>
 <body>
   <svg id="scene" width="800" height="600"></svg>
+  <div class="timeline" id="timeline"></div>
+  <button onclick="addFrame()">Add Frame</button>
   <button onclick="playAnimation()">Play Animation</button>
 
   <script>
     const svg = document.getElementById('scene');
+    const timeline = document.getElementById('timeline');
     const teamColors = [
       'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'cyan', 'magenta'
     ];
+    let frames = [];
+    let currentFrameIndex = 0;
 
-    // Create 10 teams, each team in the same place
     function createTeams() {
       let y = 550; // Position at the bottom
       let teamSpacing = 80; // Spacing between teams
@@ -91,12 +114,61 @@
       });
     }
 
-    createTeams();
-
-    // Placeholder function for playing animation
-    function playAnimation() {
-      console.log('Play animation');
+    function addFrame() {
+      const frame = {
+        players: Array.from(svg.querySelectorAll('.player')).map(player => {
+          return {
+            cx: player.getAttribute('cx'),
+            cy: player.getAttribute('cy'),
+            fill: player.getAttribute('fill'),
+            number: player.nextSibling.textContent
+          };
+        })
+      };
+      frames.push(frame);
+      renderTimeline();
     }
+
+    function renderTimeline() {
+      timeline.innerHTML = '';
+      frames.forEach((frame, index) => {
+        const frameElement = document.createElement('div');
+        frameElement.classList.add('frame');
+        if (index === currentFrameIndex) {
+          frameElement.classList.add('active');
+        }
+        frameElement.textContent = index + 1;
+        frameElement.addEventListener('click', () => {
+          loadFrame(index);
+        });
+        timeline.appendChild(frameElement);
+      });
+    }
+
+    function loadFrame(index) {
+      currentFrameIndex = index;
+      const frame = frames[index];
+      svg.innerHTML = '';
+      frame.players.forEach(playerData => {
+        createPlayer(playerData.cx, playerData.cy, playerData.fill, playerData.number);
+      });
+      renderTimeline();
+    }
+
+    function playAnimation() {
+      let frameIndex = 0;
+      const interval = setInterval(() => {
+        if (frameIndex >= frames.length) {
+          clearInterval(interval);
+          return;
+        }
+        loadFrame(frameIndex);
+        frameIndex++;
+      }, 1000); // Change frame every 1000ms
+    }
+
+    createTeams();
+    addFrame(); // Add initial frame
   </script>
 </body>
 </html>
