@@ -11,103 +11,62 @@
     }
     .player {
       cursor: pointer;
-      fill: blue;
+      fill-opacity: 0.8;
+    }
+    .player-text {
+      font-size: 12px;
+      text-anchor: middle;
+      alignment-baseline: middle;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <svg id="scene" width="800" height="600">
-    <!-- Define the player element (a circle in this case) -->
-    <circle id="player" class="player" cx="50" cy="50" r="20"></circle>
-  </svg>
+  <svg id="scene" width="800" height="600"></svg>
   <button onclick="playAnimation()">Play Animation</button>
 
   <script>
     const svg = document.getElementById('scene');
-    const player = document.getElementById('player');
-    let isDragging = false;
-    let animationPath = [];
-    let currentFrame = 0;
-
-    // Handle dragging
-    svg.addEventListener('mousedown', (event) => {
-      if (event.target === player) {
-        isDragging = true;
-        const point = svg.createSVGPoint();
-        point.x = event.clientX;
-        point.y = event.clientY;
-        const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
-        player.setAttribute('cx', svgPoint.x);
-        player.setAttribute('cy', svgPoint.y);
-        animationPath.push({ x: svgPoint.x, y: svgPoint.y });
-      }
-    });
-
-    svg.addEventListener('mousemove', (event) => {
-      if (isDragging) {
-        const point = svg.createSVGPoint();
-        point.x = event.clientX;
-        point.y = event.clientY;
-        const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
-        player.setAttribute('cx', svgPoint.x);
-        player.setAttribute('cy', svgPoint.y);
-      }
-    });
-
-    svg.addEventListener('mouseup', () => {
-      if (isDragging) {
-        isDragging = false;
-      }
-    });
-
-    // Playback animation
-    function playAnimation() {
-      if (animationPath.length === 0) return;
-      currentFrame = 0;
-      const interval = setInterval(() => {
-        if (currentFrame >= animationPath.length) {
-          clearInterval(interval);
-          return;
-        }
-        const frame = animationPath[currentFrame];
-        player.setAttribute('cx', frame.x);
-        player.setAttribute('cy', frame.y);
-        currentFrame++;
-      }, 100); // Change frame every 100ms
-    }
-
     const teamColors = [
       'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'cyan', 'magenta'
     ];
 
-    // Create 10 teams with varying number of players
+    // Create 10 teams, each team in the same place
     function createTeams() {
-      let x = 20;
-      let y = 500;
-      let teamSpacing = 60;
-      let playerSpacing = 30;
+      let x = 100;
+      let y = 100;
 
       teamColors.forEach((color, teamIndex) => {
         let numPlayers = teamIndex + 1; // Each team has teamIndex + 1 players
         for (let i = 0; i < numPlayers; i++) {
-          createPlayer(x + teamIndex * teamSpacing, y - i * playerSpacing, color);
+          createPlayer(x, y, color, i + 1);
         }
       });
     }
 
-    function createPlayer(x, y, color) {
+    function createPlayer(x, y, color, number) {
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const player = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       player.setAttribute('cx', x);
       player.setAttribute('cy', y);
       player.setAttribute('r', 20);
       player.setAttribute('fill', color);
       player.classList.add('player');
-      svg.appendChild(player);
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', y);
+      text.classList.add('player-text');
+      text.textContent = number;
+
+      group.appendChild(player);
+      group.appendChild(text);
+      svg.appendChild(group);
 
       // Add drag-and-drop functionality
       let isDragging = false;
 
-      player.addEventListener('mousedown', (event) => {
+      group.addEventListener('mousedown', (event) => {
         isDragging = true;
         event.preventDefault();
       });
@@ -120,6 +79,8 @@
           const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
           player.setAttribute('cx', svgPoint.x);
           player.setAttribute('cy', svgPoint.y);
+          text.setAttribute('x', svgPoint.x);
+          text.setAttribute('y', svgPoint.y);
         }
       });
 
@@ -131,6 +92,11 @@
     }
 
     createTeams();
+
+    // Placeholder function for playing animation
+    function playAnimation() {
+      console.log('Play animation');
+    }
   </script>
 </body>
 </html>
