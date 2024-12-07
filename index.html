@@ -5,9 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SVG Animation App</title>
   <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: #f0f0f0; /* Added background color */
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      height: 90%;
+    }
+    .field-container {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     svg {
       border: 1px solid black;
       user-select: none;
+      width: 100%;
+      height: auto;
     }
     .player {
       cursor: pointer;
@@ -45,46 +70,70 @@
     .path-node {
       cursor: pointer;
     }
+    .teams {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 10px; /* Placed at the bottom of the SVG */
+    }
+    button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 5px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
-  <svg id="scene" width="1200" height="800">
-    <!-- Field Background -->
-    <rect width="100%" height="100%" fill="green" />
+  <div class="container">
+    <div class="field-container">
+      <svg id="scene" viewBox="0 0 1200 880"> <!-- Increased height by 10% -->
+        <!-- Field Background -->
+        <rect width="100%" height="100%" fill="green" />
 
-    <!-- Outer Lines -->
-    <rect x="50" y="50" width="1100" height="700" fill="none" stroke="white" stroke-width="4"/>
+        <!-- Outer Lines -->
+        <rect x="50" y="50" width="1100" height="700" fill="none" stroke="white" stroke-width="4"/>
 
-    <!-- Goal Areas -->
-    <rect x="50" y="300" width="50" height="200" fill="none" stroke="white" stroke-width="4"/>
-    <rect x="1100" y="300" width="50" height="200" fill="none" stroke="white" stroke-width="4"/>
+        <!-- Goal Areas -->
+        <rect x="50" y="300" width="50" height="200" fill="none" stroke="white" stroke-width="4"/>
+        <rect x="1100" y="300" width="50" height="200" fill="none" stroke="white" stroke-width="4"/>
 
-    <!-- Penalty Areas -->
-    <rect x="50" y="200" width="150" height="400" fill="none" stroke="white" stroke-width="4"/>
-    <rect x="1000" y="200" width="150" height="400" fill="none" stroke="white" stroke-width="4"/>
+        <!-- Penalty Areas -->
+        <rect x="50" y="200" width="150" height="400" fill="none" stroke="white" stroke-width="4"/>
+        <rect x="1000" y="200" width="150" height="400" fill="none" stroke="white" stroke-width="4"/>
 
-    <!-- Center Circle -->
-    <circle cx="600" cy="400" r="70" fill="none" stroke="white" stroke-width="4"/>
+        <!-- Center Circle -->
+        <circle cx="600" cy="400" r="70" fill="none" stroke="white" stroke-width="4"/>
 
-    <!-- Penalty Spots -->
-    <circle cx="200" cy="400" r="5" fill="white"/>
-    <circle cx="1000" cy="400" r="5" fill="white"/>
+        <!-- Penalty Spots -->
+        <circle cx="200" cy="400" r="5" fill="white"/>
+        <circle cx="1000" cy="400" r="5" fill="white"/>
 
-    <!-- Center Spot -->
-    <circle cx="600" cy="400" r="5" fill="white"/>
+        <!-- Center Spot -->
+        <circle cx="600" cy="400" r="5" fill="white"/>
 
-    <!-- Halfway Line -->
-    <line x1="600" y1="50" x2="600" y2="750" stroke="white" stroke-width="4"/>
-  </svg>
-  <div class="timeline" id="timeline"></div>
-  <button onclick="addFrame()">Add Frame</button>
-  <button onclick="removeLastFrame()">Remove Last Frame</button>
-  <button onclick="playAnimation()">Play</button>
-  <button onclick="stopAnimation()">Stop</button>
-  <button onclick="toggleLoop()">Loop: Off</button>
+        <!-- Halfway Line -->
+        <line x1="600" y1="50" x2="600" y2="750" stroke="white" stroke-width="4"/>
+      </svg>
+      <div class="buttons">
+        <button onclick="addFrame()">Add Frame</button>
+        <button onclick="removeLastFrame()">Remove Last Frame</button>
+        <button onclick="playAnimation()">Play</button>
+        <button onclick="stopAnimation()">Stop</button>
+        <button onclick="toggleLoop()">Loop: Off</button>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+    <div class="teams" id="teams"></div>
+  </div>
 
   <script>
     const svg = document.getElementById('scene');
+    const teamsDiv = document.getElementById('teams');
     const timeline = document.getElementById('timeline');
     const teamColors = [
       'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'cyan', 'magenta'
@@ -95,7 +144,7 @@
     let isLooping = false;
 
     function createTeams() {
-      let y = 550; // Position at the bottom
+      let y = 830; // Position at the bottom outside the field
       let teamSpacing = 80; // Spacing between teams
 
       teamColors.forEach((color, teamIndex) => {
