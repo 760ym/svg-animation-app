@@ -243,7 +243,9 @@
     function loadFrame(index) {
       currentFrameIndex = index;
       const frame = frames[index];
-      svg.innerHTML = '';
+      const fieldElements = svg.querySelectorAll('rect, circle, line'); // Preserve field elements
+      svg.innerHTML = ''; // Clear only player elements
+      fieldElements.forEach(element => svg.appendChild(element)); // Reattach field elements
       frame.players.forEach(playerData => {
         createPlayer(playerData.cx, playerData.cy, playerData.fill, playerData.number);
       });
